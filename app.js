@@ -7,8 +7,11 @@ const expressSession = require('express-session');
 const MongoStore = require('connect-mongo')(expressSession);
 const fs = require('fs');
 const http = require('http');
+const passport = require('passport');
+const flash = require('connect-flash');
 const credentials = require('./credentials.js');
-const routers = require('./routes');
+const routes = require('./routes/')(passport);
+const initPassport = require('./passport/init');
 
 const app = express();
 
@@ -36,7 +39,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(routers);
+// Configuring Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(flash());
+
+// Initialize Passport
+initPassport(passport);
+
+app.use('/', routes);
 
 // автоподстановка шаблонов
 const autoViews = {};
